@@ -1,0 +1,29 @@
+﻿@model Confirm
+        
+                <div class="col-4 text-center">
+                    <form asp-contoroller="Auth" asp-action="ConfirmAccount" method="post">
+                        <h1 class="h3 fw-normal">Set Password</h1>
+                        <input type="hidden" asp-for="Token" />
+                        <input type="hidden" asp-for="ReturnUrl" />
+                        <div class="form-floating">
+                            <input asp-for="Email" type="email" class="form-control" placeholder="name@example.com" required readonly>
+                            <label>Email address</label>
+                        </div>
+                        <div class="form-floating">
+                            <input asp-for="Password" type="password" id="txtPassword" class="form-control" placeholder="Password" required minlength="8" maxlength="100">
+                            <label>Password</label>
+                        </div>
+                        <div class="form-floating">
+                            <input asp-for="ConfirmPassword" type="password" id="txtConfirmPassword" class="form-control" placeholder="Confirm Password" required minlength="8" maxlength="100"> 
+                            <label>Confirm Password</label>
+                        </div>
+                        <div>
+                            <p class="mt-5 mb-3 text-muted"></p>
+                        </div>
+                        <div>
+                            <button class="w-100 btn btn-lg btn-primary" type="submit">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
