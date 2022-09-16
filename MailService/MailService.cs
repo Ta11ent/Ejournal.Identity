@@ -1,60 +1,48 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
+using MailService.Sender;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using MimeKit.Text;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace MailService
 {
     public class MailService : IMailService
     {
-        private readonly MailOptions _mailSettings;
+        private readonly MailOptions mailSettings;
         public MailService(IOptions<MailOptions> mailSettings)
         {
-            _mailSettings = mailSettings.Value;
+            this.mailSettings = mailSettings.Value;
         }
-        public virtual async Task SendEmailAsync(string subject, string recipient, string message)
+
+        public async Task SendEmailTextAsync(string subject, string recipient, string message)
         {
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse(_mailSettings.Sender));
-            email.To.Add(MailboxAddress.Parse(recipient));
-            email.Subject = subject;
-            email.Body = new TextPart(TextFormat.Html)
+            GenericEmail objectEmail = new GenericEmailText(subject, recipient, message)
             {
-                Text = message
+                Options = mailSettings
             };
-
-            await SendEmail(email);
+            await SendEmail(objectEmail.Object().Email());
         }
-        public virtual async Task SendEmailTemplateAsync(string subject, string recipient, string link)
+
+        public async Task SendEmailTemplateAsync(string subject, string recipient, string link)
         {
-            StreamReader str = new StreamReader(_mailSettings.TemplatePath);
-            string MailText = str.ReadToEnd();
-            str.Close();
-
-            MailText = MailText.Replace("[ConfirmationLink]", link).Replace("[Subject]", subject);
-            var email = new MimeMessage();
-            email.Sender = MailboxAddress.Parse(_mailSettings.Sender);
-            email.To.Add(MailboxAddress.Parse(recipient));
-            email.Subject = subject;
-            var builder = new BodyBuilder();
-            builder.HtmlBody = MailText;
-            email.Body = builder.ToMessageBody();
-
-            await SendEmail(email);
+            GenericEmail objectEmail = new GenericEmailTemplate(subject, recipient, link)
+            {
+                Options = mailSettings
+            };
+            await SendEmail(objectEmail.Object().Email());
         }
 
         private async Task SendEmail(MimeMessage email)
         {
             using (var smpt = new SmtpClient())
             {
-                await smpt.ConnectAsync(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
-                await smpt.AuthenticateAsync(_mailSettings.UserName, _mailSettings.Password);
+                await smpt.ConnectAsync(mailSettings.Host, mailSettings.Port, SecureSocketOptions.StartTls);
+                await smpt.AuthenticateAsync(mailSettings.UserName, mailSettings.Password);
                 await smpt.SendAsync(email);
                 await smpt.DisconnectAsync(true);
             }
         }
+
     }
 }
